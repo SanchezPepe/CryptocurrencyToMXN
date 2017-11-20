@@ -1,0 +1,120 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_home"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".home">
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
+        android:ems="10"
+        android:layout_below="@+id/textView2"
+        android:layout_alignParentStart="true"
+        android:id="@+id/monto"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:text="Moneda"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/monto"
+        android:layout_alignParentStart="true"
+        android:id="@+id/textView3" />
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:id="@+id/coins"
+        android:layout_below="@+id/textView3"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:text="Convertir"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/conv"
+        android:onClick="convierte"
+        android:layout_below="@+id/coins"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:textSize="40dp"
+        android:textAlignment="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:id="@+id/res"
+        android:layout_below="@+id/conv"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:text="BTC"
+        android:paddingBottom="5dp"
+        android:textSize="20dp"
+        android:textColor="@android:color/black"
+        android:textAlignment="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/Tbtc"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:text="ETH"
+        android:textSize="20dp"
+        android:paddingBottom="5dp"
+        android:textColor="@android:color/black"
+        android:textAlignment="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/Teth"
+        android:layout_below="@+id/Tbtc"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:text="XRP"
+        android:textSize="20dp"
+        android:paddingBottom="5dp"
+        android:textColor="@android:color/black"
+        android:textAlignment="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/Txrp"
+        android:layout_below="@+id/Teth"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:text="BCH"
+        android:textSize="20dp"
+        android:paddingBottom="5dp"
+        android:textColor="@android:color/black"
+        android:textAlignment="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/Tbch"
+        android:layout_below="@+id/Txrp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:text="Convertir"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView2"
+        android:layout_below="@+id/Tbch"
+        android:layout_alignParentStart="true" />
+
+
+</RelativeLayout>
