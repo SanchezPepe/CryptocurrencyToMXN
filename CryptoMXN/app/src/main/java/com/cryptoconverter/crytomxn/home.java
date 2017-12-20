@@ -1,14 +1,19 @@
 package com.cryptoconverter.crytomxn;
 
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,17 +21,28 @@ import android.widget.Toast;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class home extends AppCompatActivity {
 
-    public String prices = "";
-    public String BTC = "";
-    public String XRP = "";
-    public String BCH = "";
-    public String ETH = "";
+    private String TAG = home.class.getSimpleName();
+
+    private ProgressDialog pDialog;
+    private ListView lv;
+
+    // URL to get contacts JSON
+    private static String url = "https://api.bitso.com/v3/ticker/";
+
+    public String coinsP[] = new String[10];
     Spinner s2;
-    TextView res, bt, et, ri, bh;
+    TextView res, bt, et, ri, bh, xrpb, ethb;
     EditText monto;
 
     @Override
@@ -34,17 +50,22 @@ public class home extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        new getCoins().execute();
+
         res = (TextView) findViewById(R.id.res);
         monto = (EditText) findViewById(R.id.monto);
         bt = (TextView) findViewById(R.id.Tbtc);
         et = (TextView) findViewById(R.id.Teth);
         ri = (TextView) findViewById(R.id.Txrp);
         bh = (TextView) findViewById(R.id.Tbch);
+        xrpb = (TextView) findViewById(R.id.Txrpb);
+        ethb = (TextView) findViewById(R.id.Tethb);
 
         String[] coins = {"BTC", "ETH", "XRP", "BCH"};
         s2 = (Spinner) findViewById(R.id.coins);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, coins);
         s2.setAdapter(adapter);
+
     }
 
     @Override
@@ -70,45 +91,12 @@ public class home extends AppCompatActivity {
         Toast.makeText(this, s, Toast.LENGTH_LONG).show();
     }
 
-    private class MyTask extends AsyncTask<Void, Void, Void> {
-
-        protected Void doInBackground(Void... params) {
-            Document doc;
-            try {
-                doc = Jsoup.connect("https://bitso.com/fees").get();
-                prices = doc.html();
-                Element s = doc.select("#lastPrice").first();
-                if(s != null)
-                    prices = s.text();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-    }
-
     public void cargaValores(View v){
-        try {
-            MyTask t = new MyTask();
-            t.execute();
-            BTC = prices.substring(12, 21);
-            ETH = prices.substring(34, 41);
-            XRP = prices.substring(77, 81);
-            BCH = prices.substring(117, 127);
-            toast("Correcto");
-            precios();
-            t.cancel(true);
-        } catch (Exception e){
-            toast("Error de conexión");
-        }
+        new getCoins().execute();
     }
 
     public void precios(){
-        String[] coins = {"1 BTC = " + BTC + " MXN", "1 ETH = " + ETH + " MXN", "1 XRP = " + XRP + " MXN", "1 BCH = " + BCH + " BTC"};
-        bt.setText(coins[0]);
-        et.setText(coins[1]);
-        ri.setText(coins[2]);
-        bh.setText(coins[3]);
+
     }
 
     public void convierte(View v){
@@ -122,21 +110,111 @@ public class home extends AppCompatActivity {
             double coin = 0;
             switch (q) {
                 case "BTC":
-                    coin = Double.parseDouble(BTC);
+                    coin = Double.parseDouble(coinsP[0]);
                     break;
                 case "ETH":
-                    coin = Double.parseDouble(ETH);
+                    coin = Double.parseDouble(coinsP[1]);
                     break;
                 case "XRP":
-                    coin = Double.parseDouble(XRP);
+                    coin = Double.parseDouble(coinsP[3]);
                     break;
                 case "BCH":
-                    coin = Double.parseDouble(BCH);
-                    coin *= Double.parseDouble(BTC);
+                    coin = Double.parseDouble(coinsP[5]);
+                    coin *= Double.parseDouble(coinsP[0]);
             }
             coin = Math.round(coin * 100.0) / 100.0;
             resp = m * coin;
             res.setText(Double.toString(resp) + " MXN");
         }
+    }
+
+    /**
+     * Async task class to get json by making HTTP call
+     */
+    private class getCoins extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // Showing progress dialog
+            pDialog = new ProgressDialog(home.this);
+            pDialog.setMessage("Please wait...");
+            pDialog.setCancelable(false);
+            pDialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... arg0) {
+            HttpHandler sh = new HttpHandler();
+
+            // Making a request to url and getting response
+            String jsonStr = sh.makeServiceCall(url);
+
+            Log.e(TAG, "Response from url: " + jsonStr);
+
+            if (jsonStr != null) {
+                try {
+                    JSONObject jsonObj = new JSONObject(jsonStr);
+
+                    // Getting JSON Array node
+                    JSONArray coins = jsonObj.getJSONArray("payload");
+
+                    // looping through All Contacts
+                    for (int i = 0; i < coins.length(); i++) {
+                        JSONObject c = coins.getJSONObject(i);
+                        coinsP[i] = c.getString("last");
+                    }
+                } catch (final JSONException e) {
+                    Log.e(TAG, "Json parsing error: " + e.getMessage());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(),
+                                    "Json parsing error: " + e.getMessage(),
+                                    Toast.LENGTH_LONG)
+                                    .show();
+                        }
+                    });
+
+                }
+            } else {
+                Log.e(TAG, "Couldn't get json from server.");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(),
+                                "Couldn't get json from server. Check LogCat for possible errors!",
+                                Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
+
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            // Dismiss the progress dialog
+            if (pDialog.isShowing())
+                pDialog.dismiss();
+
+            String[] coins = {"1 BTC = " + coinsP[0] + " MXN",
+                    "1 ETH = " + coinsP[1] + " MXN",
+                    "1 XRP = " + coinsP[3] + " MXN",
+                    "1 BCH = " + coinsP[5] + " BTC",
+                    "1 ETH = " + coinsP[4] + " BTC",
+                    "1 XRP = " + coinsP[2] + " BTC"};
+
+            bt.setText(coins[0]);
+            et.setText(coins[1]);
+            ri.setText(coins[2]);
+            bh.setText(coins[3]);
+            xrpb.setText(coins[4]);
+            ethb.setText(coins[5]);
+        }
+
+
     }
 }
